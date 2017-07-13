@@ -2209,7 +2209,7 @@ U 1 1 58FEE34C
 P 2300 850
 F 0 "P2" H 2300 950 50  0000 C CNN
 F 1 "Temp5025" V 2400 850 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x01_Pitch1.27mm" H 2300 850 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x01_Pitch2.54mm" H 2300 850 50  0001 C CNN
 F 3 "" H 2300 850 50  0000 C CNN
 	1    2300 850 
 	0    -1   -1   0   
@@ -2224,7 +2224,7 @@ U 1 1 58FEE9D4
 P 7600 850
 F 0 "P18" H 7600 950 50  0000 C CNN
 F 1 "Temp5030" V 7700 850 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x01_Pitch1.27mm" H 7600 850 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x01_Pitch2.54mm" H 7600 850 50  0001 C CNN
 F 3 "" H 7600 850 50  0000 C CNN
 	1    7600 850 
 	0    -1   -1   0   
