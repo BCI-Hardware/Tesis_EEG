@@ -1,9 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP OPA735
-D Low-Noise High-Speed Audio Operational Amplifier
-K Low-Noise OPAMP
-F http://www.ti.com/lit/ds/symlink/opa735.pdf
-$ENDCMP
-#
-#End Doc Library

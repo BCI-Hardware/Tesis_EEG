@@ -1,4 +1,0 @@
-(fp_lib_table
-  (lib (name LogoModules)(type KiCad)(uri "$(KIPRJMOD)/LogoModules")(options "")(descr ""))
-  (lib (name PINtorneado)(type KiCad)(uri "$(KIPRJMOD)/PINtorneado")(options "")(descr ""))
-)
