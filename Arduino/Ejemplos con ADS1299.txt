@@ -1,0 +1,4 @@
+
+https://github.com/OpenBCI/OpenBCI-V2hardware-DEPRECATED
+
+https://github.com/conorrussomanno/ADS1299

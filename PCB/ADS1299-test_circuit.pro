@@ -1,4 +1,4 @@
-update=09/07/2017 20:47:35
+update=10/01/2018 22:30:26
 version=1
 last_client=kicad
 [pcbnew]
@@ -62,3 +62,13 @@ LibName30=ADS1299
 LibName31=REF5025
 LibName32=REF5030
 LibName33=OPA735
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
