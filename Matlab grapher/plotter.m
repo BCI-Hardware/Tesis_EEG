@@ -8,106 +8,68 @@
 %                           Tutor: Sergio Lew
 %
 %  Code description:
-%  This code reads and processes the data sent by the IC ADS1299 through an
-%  Arduino NANO
+%  This code reads EEG data from a txt file, filters and plots both the raw
+%  data and the filtered one. It also performs an FFT on the data.
 %**************************************************************************
-close all
-clear
+function read_data(file_name)
 
-% Delete all serial port objects, regardless of the value of the object's 
-% ObjectVisibility property
-delete(instrfindall)
+arduino_SR = 250;
+samples=500;
+active_channels = 1;
+plot_status = true;
 
-% Create a serial port associated with COM5
-serial_port = 'COM5';
-s = serial(serial_port);
-s.BaudRate = 115200;
-s.DataBits = 8;
-s.Parity = 'none';
-s.StopBits = 1;
-s.inputBufferSize = 2056;
+% Notch filter at 50 Hz
+wo=50/(250/2);bw=wo/5;
+[bn,an]=iirnotch(wo,bw);
 
-fopen(s)
-pause(6)
-flushinput(s)
-flushoutput(s)
-pause(1)
-fwrite(s,'1');
-pause(1)
+fileID = fopen(file_name,'r');
+data = fscanf(fileID,'%f');
+fclose(fileID);
 
 % Get screen size
 scrsz = get(0,'ScreenSize');
-
 % Draw figure to place the graphs
-figure('Position',[1 1 0.75*1920 0.75*1080]); % [left bottom width height]
+plotter_fig = figure('Position',[1 1 0.75*1920 0.75*1080]); % [left bottom width height]
 hold on
 
-samples=500;
+x=0:1/250:length(data)/250 - 1/250;
 
-while(1)
-    c = fread(s, samples, 'float')
-    if(length(c)<samples)
-        length(c)
-        break;
-    end    
+size(data)
+for i=1:active_channels
+    j = 0;    
+    channel(:,i) = data(i:active_channels:end, i);
     
-    % Separate channel 1 and channel 2 data
-    channel_1 = c(1:2:end);
-    channel_2 = c(2:2:end);
-    
-%     % Low pass filter to remove high frequency noise
-%     fc = 50; % Cut off frequency
-%     fs = 1000; % Sampling rate
-%     [b,a] = butter(6,fc/(fs/2)); % Butterworth filter of order 6
-%     
-%     clp_ch1 = filter(b,a,channel_1); % Will be the filtered signal for ch1
-%     clp_ch2 = filter(b,a,channel_2); % Will be the filtered signal for ch2
-    
-    % Smoothen data
-    c_smooth_ch1=smooth(channel_1,5);
-    c_smooth_ch2=smooth(channel_2,5);
-    
-    % Notch filter at 50 Hz        
-    wo=50/(250/2);bw=wo/5;
-    [bn,an]=iirnotch(wo,bw);
-    
-    c_filt_ch1 = filter(bn, an, c_smooth_ch1);
-    c_filt_ch2 = filter(bn, an, c_smooth_ch2);
-    
-    % Plot channel 1 and channel 2 data
+    % Plot incoming signals without filtering
     clf
-    subplot(3,1,1)
-    plot(c_filt_ch1)
+    subplot(3,active_channels,active_channels + j)
+    plot(x, channel(:,i))
+    ylim([-100 100])
+    title(strcat('Raw CH', int2str(i)))
+    j=j+1;
     
-    subplot(3,1,2)
-    plot(c_filt_ch2)
-
-    %% FFT
-    Fs = 256;            % Sampling frequency                    
-    T = 1/Fs;            % Sampling period       
-    L = samples;         % Length of signal
-    t = (0:L-1)*T;       % Time vector
-
-    Y = fft(c);
-
-    P2 = abs(Y/L);
-    P1 = P2(1:L/2+1);
-    P1(2:end-1) = 2*P1(2:end-1);
-
-    f = Fs*(0:(L/2))/L;
+    % High pass filter to remove DC
+    ch_hp(i,:) = eegfilt(channel(:,i)', arduino_SR, 1, 0);
+    % Low pass filter to remove high frequency noise
+    ch_lp(:,i) = eegfilt(ch_hp(i, :), arduino_SR, 0, 100)';
     
-    subplot(3,1,3)
-    plot(f,P1) 
-%     title('Single-Sided Amplitude Spectrum of X(t)')
+    % Notch filter at 50 Hz
+    c_filt_ch(:,i) = filter(bn, an, ch_lp(:,i));
+    
+    % Plot channel data (filtered)
+    subplot(3,active_channels,active_channels + j)
+    plot(x, c_filt_ch(:,i))
+    ylim([-100 100])
+    title(strcat('Filtered CH', int2str(i)))
+    j=j+1;
+    
+    % Compute and plot channel FFT
+    [fft_ch(:,i) f] = fft_custom(c_filt_ch(:,i));
+    subplot(3,active_channels,active_channels + j)
+    plot(f,fft_ch(:,i))
+    title(strcat('Single-Sided Amplitude Spectrum of CH', int2str(i)))
     xlabel('f (Hz)')
-    ylabel('|P1(f)|')
-
-    pause(0.0001)
-
+    ylabel('|fft_ch1(f)|')
+    xlim([0 20])
+    j=j+1;
 end
-
-
-fclose(s)
-delete(instrfindall)
-
-
+end
