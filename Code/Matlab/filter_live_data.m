@@ -18,10 +18,10 @@ function channel_data_lp = filter_live_data(channel, srate)
 active_channels = size(channel, 2);
 
 % Butterworth filter, second order, high pass
-fc_lp=30/(250/2);
+fc_lp=10/(250/2);
 [b_lp,a_lp]=butter(1,fc_lp);
 
-fc_hp=0.01/(250/2);
+fc_hp=5/(250/2);
 [b_hp,a_hp]=butter(1,fc_hp,'high');
 
 % Notch filter at 50 Hz

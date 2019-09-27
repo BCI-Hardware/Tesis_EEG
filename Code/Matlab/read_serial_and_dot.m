@@ -15,11 +15,7 @@
 close all
 clear
 
-samples = 500;
-% Configuration for the dot displacing screen
-seconds_per_dot = 3;
-N_dots = 100;
-recording_duration = seconds_per_dot * (N_dots + 45);
+%% SERIAL PORT
 % Delete all serial port objects, regardless of the value of the object's 
 % ObjectVisibility property
 delete(instrfindall)
@@ -42,86 +38,109 @@ pause(1)
 fwrite(serial_port,'1');
 pause(1)
 
+%% OUTPUT FILES SET UP
 % Create files to save data to. Make the names out of the current date,
 % to avoid stepping over.
-current_date = datestr(now, 'dd_mm_yyyy_HH_MM_SS');
-% File to store positions of random dots to
-dot_positions_file_name = strcat('data/', current_date, '.mat');
-% File to store eeg channel data to
-channel_data_file_name = strcat('data/', current_date, '.txt');
-output_file_id = fopen(channel_data_file_name,'w');
+% current_date = datestr(now, 'dd_mm_yyyy_HH_MM_SS');
+current_date = '26_09_2019_21_09_46';
 
-% Parameters to make initial sound with
+% File to store positions of random dots to
+test_stimuli_file_name = strcat('data/', current_date, '_test_ch2.mat');
+% cal_stimuli_file_name = strcat('data/', current_date, '_cal_ch1.mat');
+pred_stimuli_file_name = strcat('data/', current_date, '_pred_ch2.mat');
+
+% File to store eeg channel data to
+% cal_eeg_file_name = strcat('data/', current_date, '_cal_ch1.txt');
+% cal_eeg_file_id = fopen(cal_eeg_file_name,'w');
+test_eeg_file_name = strcat('data/', current_date, '_test_ch2.txt');
+test_eeg_file_id = fopen(test_eeg_file_name,'w');
+
+%% CALIBRATION STAGE
+
+% CONFIG
+samples = 500;
+% Configuration for the dot displacing screen
+current_cycle = 0;
+seconds_per_stimuli = 3;
+N_dots = 12;
+calibration_cycles = (N_dots + 6) * seconds_per_stimuli;
+
+
+% Initial bell
 res = 100050;
 len = 0.5 * res;
-hz = 800;
-
-% Variable to store current cycle
-current_cycle = 0;
-% Start countdown
-cycles_to_record = recording_duration;
-
-% Resting
 sound( sin( 400*(2*pi*(0:len)/res) ), res);
 
-% x coordinates used to do real time plotting
-n_sample=1:samples;
-
-% Initial timestamp
-ts = 0;
-figure;
-d0 = 0;
-x = [];
-% hold on;
-while(current_cycle < cycles_to_record)
+while(current_cycle < calibration_cycles)
     % On first pass, clean the port and start the dot generator
     if current_cycle == 0
         flushinput(serial_port)
         flushoutput(serial_port)
-        gui = dot_generator(seconds_per_dot, N_dots, dot_positions_file_name);
-        h = figure(gui)
-        % Save initial timestamp
-        ts = now;
+        cal_gui = calibrator_gui(seconds_per_stimuli, N_dots, cal_stimuli_file_name);
+        cal_fig = figure(cal_gui);
     end
    
     c = fread(serial_port, samples, 'float');
     
     %Print channel data to file
-    fprintf(output_file_id, '%f\n', c);
-    
-%     %Plot samples in real time
-%     x = [ x mean(c(2:2:end))];
-%     plot(x);
-%     hold on;
-%     pause(0.01);
-    
-    
-%     avg = mean(c(2:2:end));
-%     if current_cycle == 0
-%         d0 = avg - 25;
-%         stem(0, 1);        
-%         xlim([0, 50]);
-%     else
-%         stem(mean(c(2:2:end)) - d0, 1);        
-%         xlim([0, 50]);
-%     end
-%     pause(0.01);
-    
+    fprintf(cal_eeg_file_id, '%f\n', c);    
     current_cycle = current_cycle + 1; 
 end
 
-disp('Finished recording')
-
-% Final bell
-sound( sin( 400*(2*pi*(0:len)/res) ), res);
-
 close all;
+% Close file with calibration data
+fclose(cal_eeg_file_id);
 
-% Close file and port
-fclose(output_file_id);
-fclose(serial_port);
+%%
+% Process data and get calibration values
+n = 50;
+[raw_signal, derivative] = process_calibration_data(cal_eeg_file_name, n);
+
+figure
+plot(raw_signal(:,1));
+figure
+plot(derivative(:,1));
+figure
+plot(raw_signal(:,2));
+figure
+plot(derivative(:,2));
+
+%% Get calibration values
+% NOTE: this is computed manually, observing the calibration output from
+% above. Consider automating this properly.
+
+% cal(1): max amplitude allowed from center to left/right
+% cal(2): max amplitude allowed from center to up/down
+cal = [435 200];
+alpha = 0;
+blinks_thr = 230;
+
+%% TEST
+
+% CONFIG
+samples = 500;
+% Configuration for the 'X' displacing screen
+seconds_per_stimuli = 3;
+N_stimuli = 30;
+n_derivative = 50;
+
+% Initial bell
+res = 100050;
+len = 0.5 * res;
+sound(sin(400*(2*pi*(0:len)/res)), res);
+
+gui = dot_generator_2(seconds_per_stimuli, N_stimuli, test_stimuli_file_name, test_eeg_file_id, pred_stimuli_file_name, serial_port, cal, alpha, blinks_thr);
+h = figure(gui);
+
+% Wait until the test is finished and the serial port is closed
+while strcmp(serial_port.Status, 'open')
+    sleep(5)
+end
+
 delete(instrfindall);
 
-% % Pass data to the plotter to process it
-% channel_data = split_channels(channel_data_file_name, 2, false);
-% plot_filtered_data(channel_data);
+% Final bell
+sound(sin(400*(2*pi*(0:len)/res)), res);
+disp('Finished recording');
+
+close all;

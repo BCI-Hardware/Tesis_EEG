@@ -78,8 +78,10 @@ start(handles.timer);
 
 function timerCallback(~, ~, parent_GUI)
 
-left = 2:3:100;
 center = 1:3:100;
+middle_up = 2:6:100;
+up = 3:6:100;
+middle_down = 5:6:100;
 
 handles = guidata(parent_GUI); 
 
@@ -88,21 +90,25 @@ set(handles.C,'Visible','off');
 
 if ~handles.displayed
     dot_xy = [0.5 0.5];
-    disp 'Hola'
     handles.displayed = true;
-else
-    % Make a random position of the dot on screen
-%     dot_xy = [0.5 0.5];
-%     dot_xy = [0.97*rand(1) 0.94*rand(1)];    
-    handles.N = handles.N + 1;
-    if ismember(handles.N, left)
-        dot_xy = [ 0.0 0.5 ];
-    elseif ismember(handles.N, center)
-        dot_xy = [ 0.5 0.5 ];
-    else
-        dot_xy = [ 0.97 0.5 ];
-    end
 end
+
+% Make a random position of the dot on screen
+%     dot_xy = [0.5 0.5];
+%     dot_xy = [0.97*rand(1) 0.94*rand(1)];
+if ismember(handles.N, center)
+    dot_xy = [ 0.5 0.5 ];
+elseif ismember(handles.N, middle_up)
+    dot_xy = [ 0.5 0.75 ];
+elseif ismember(handles.N, up)
+    dot_xy = [ 0.5 0.94 ];
+elseif ismember(handles.N, middle_down)
+    dot_xy = [ 0.5 0.25 ];
+else
+    dot_xy = [ 0.5 0.0 ];
+end
+
+handles.N = handles.N + 1;
 
 dot_position = [dot_xy 0.033 0.073];
 set(handles.C,'Visible','on', 'Position', dot_position);

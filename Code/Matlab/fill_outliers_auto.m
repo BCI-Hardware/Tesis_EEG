@@ -45,7 +45,7 @@ fs = 1/srate;
 time=0:fs:length(channel)*fs - fs;
 N_samples = length(channel);
 
-pks_max_thr_all = [0.53, 0.43]; %[0.53, 0.43]
+pks_max_thr_all = [1, 0.43]; %[0.53, 0.43]
 clean_data = [];
 
 for k=1:active_channels

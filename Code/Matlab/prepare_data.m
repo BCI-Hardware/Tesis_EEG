@@ -22,11 +22,14 @@
 %         pytorch /input_data directory.
 %**************************************************************************
 
-close all;
+%close all;
 clear all;
 
-data_date = '21_08_2019_19_11_30';
+data_date = '26_09_2019_21_09_46_test_ch1';
 network_input_type = 1;
+
+%07_09_2019_14_16_59
+%07_09_2019_14_23_44
 
 input_data_file_name = strcat('data\', data_date, '.txt');
 ts_and_dot_data_file = strcat('data\', data_date, '.mat');
@@ -37,7 +40,14 @@ srate = 250;
 % matrix with raw eeg data, one channel per column)
 should_plot = true;
 
-[real_channel_data, clean_channel_data] = preprocess_data(input_data_file_name, ts_and_dot_data_file, should_plot);
+% [real_channel_data, clean_channel_data] = preprocess_data(input_data_file_name, ts_and_dot_data_file, should_plot);
+
+file_id = fopen(input_data_file_name,'r');
+eeg_data = fscanf(file_id,'%f');
+fclose(file_id);
+
+channel_data = split_channels(eeg_data, 2, 24);
+
 
 % Get amplitude of each eog stimuli by applying a manual filter to the raw
 % signal
@@ -45,11 +55,18 @@ should_plot = true;
 n = 50;
 
 % NOTE: This is a temporary test made on channel 1 only
-s = real_channel_data(:,1);
+s = channel_data(:,2);
 % Derivative of raw signal
 sd=s(n:end)-s(1:end-(n -1));
+
+figure;plot(channel_data(:,1))
 
 % Plot both signals together
 figure;plot(s)
 hold on
+plot(sd  - 3250,'r')
+
+% Plot both signals together
+figure;plot(s)
+figure
 plot(sd,'r')

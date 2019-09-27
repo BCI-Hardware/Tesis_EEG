@@ -92,15 +92,15 @@ while true
     % Split channels, filter signal and remove outliers
     [clean_channel_data, raw_channel_data] = process_live_data(c);
     
-    nn_input = [clean_channel_data(:,1);clean_channel_data(:,2)]';
-    size(nn_input)
-    
-    normalized_input = normalize_data(nn_input, activation_relu);
-    
-    % Compute prediction (normalized between 0 and 1)
-    [x_pred, y_pred] = get_normalized_pred(normalized_input, data_id);
-    x_pred
-    y_pred
+%     nn_input = [clean_channel_data(:,1);clean_channel_data(:,2)]';
+%     size(nn_input)
+%     
+%     normalized_input = normalize_data(nn_input, activation_relu);
+%     
+%     % Compute prediction (normalized between 0 and 1)
+%     [x_pred, y_pred] = get_normalized_pred(normalized_input, data_id);
+%     x_pred
+%     y_pred
     % Draw predicted point as a square on the screen
     hold on;
     % First clear previous rectangle
